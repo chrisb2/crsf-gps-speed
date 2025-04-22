@@ -4,6 +4,8 @@ This sensor based on a [SeeedStudio XIAO RP2040](https://www.seeedstudio.com/XIA
 
 The XIAO RP2040 was chosen as the 3.3V buck converter (part no. RS3236) it has accepts upto 8V on *Vin*, this is required as the ER6 and ER8 have 7V on the positive pin of the CRSF input port, allowing the RP2040 to be directly powered by the receiver.
 
+Current meassurements show this sensor takes 80-90mA with the *TOPGNSS GG-1802* GPS module used.
+
 ## GPS Module Configuration
 
 The following configuration is optimised for a yacht, you may need to alter the  *Dynamic Model* for a plane. 
