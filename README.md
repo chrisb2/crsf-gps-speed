@@ -1,8 +1,8 @@
 # CRSF GPS Speed and Coordinates Sensor
 
-This sensor based on a [SeeedStudio XIAO RP2040](https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html) reads from a GPS module and sends telemetry values using the CRSF protocol, which can be consumed by an appropriate ELRS radio control receiver, for example a RadioMaster ER6 or ER8.
+This sensor based on a [SeeedStudio XIAO RP2040](https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html) reads from a GPS module and sends GPS telemetry values using the CRSF protocol, which can be consumed by an appropriate [ELRS](https://www.expresslrs.org/) radio control receiver, for example a RadioMaster ER6 or ER8.
 
-The XIAO RP2040 was chosen as the 3.3V buck converter (RS3236) it has accepts upto 8V on *Vin*, this is required as the ER6 and ER8 have 7V on the positive pin of the CRSF input port, allowing the RP2040 to be directly powered by the receiver.
+The XIAO RP2040 was chosen as the 3.3V buck converter (part no. RS3236) it has accepts upto 8V on *Vin*, this is required as the ER6 and ER8 have 7V on the positive pin of the CRSF input port, allowing the RP2040 to be directly powered by the receiver.
 
 ## GPS Module Configuration
 
@@ -15,6 +15,7 @@ Configure the following in the *View->Configuration View* of the [u-blox u-cente
 * RATE->Measurement Period: 100ms
 * PMS->Setup ID: 0 - Full Power
 * NAV5->Dynamic Model: 3 - Pedestrian
+* GNSS->BeiDou: checked (in addition to GPS)
 * MSG->Message->F0-01 NMEA GxGLL: uncheck all
 * MSG->Message->F0-01 NMEA GxGSA: uncheck all
 * MSG->Message->F0-01 NMEA GxGSV: uncheck all
@@ -23,7 +24,7 @@ Configure the following in the *View->Configuration View* of the [u-blox u-cente
 ## RP2040 LEDs
 
 * Blue - flashes once per second if CRSF is initialized.
-* Green - flashes once per telemtry message over CRSF.
+* Green - flashes once per telemetry message over CRSF.
 
 ## ER6 Receiver CRSF Port
 
