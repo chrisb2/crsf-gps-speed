@@ -7,6 +7,7 @@
 #define GPS_RX 3
 #define GPS_TX 4
 #define GREEN_LED 16
+#define BLUE_LED 25
 #define GPS_DEBUG_ENABLED 1
 // #define SERIAL_DEBUG_ENABLED 1
 
@@ -14,7 +15,7 @@ int incomingByte = 0;
 CRSFforArduino crsf = CRSFforArduino(&Serial1);
 TinyGPSPlus gps;
 SoftwareSerial gpsSerial = SoftwareSerial(GPS_RX, GPS_TX);
-ezLED crsfLed(LED_BUILTIN);
+ezLED crsfLed(BLUE_LED);
 ezLED gpsFixLed(GREEN_LED);
 
 void setup() {

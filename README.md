@@ -6,6 +6,8 @@ The XIAO RP2040 was chosen as the 3.3V buck converter (part no. RS3236) it has a
 
 Current meassurements show this sensor takes 80-90mA with the *TOPGNSS GG-1802* GPS module used.
 
+Note that this project uses the arduino-pico platform to enable the use of a additional Serial port on the RP2040 using PIO, see [“SoftwareSerial” PIO-based UART](https://arduino-pico.readthedocs.io/en/latest/piouart.html#).
+
 ## GPS Module Configuration
 
 The following configuration is optimised for a yacht, you may need to alter the  *Dynamic Model* for a plane. 
