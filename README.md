@@ -28,7 +28,7 @@ Configure the following in the *View->Configuration View* of the [u-blox u-cente
 ## RP2040 LEDs
 
 * Blue - flashes once per second if CRSF is initialized.
-* Green - flashes once per telemetry message over CRSF, once a GPC fix is obtained.
+* Green - flashes once per telemetry message over CRSF, once a GPS fix is obtained.
 
 ## Connections
 
