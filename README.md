@@ -35,7 +35,7 @@ Configure the following in the *View->Configuration View* of the [u-blox u-cente
 * RP2040 GND -> GNSS GND
 * RP2040 3.3V -> GNSS VCC
 * RP2040 P3 -> GNSS TX
-* RP2040 P4 -> GMSS RX
+* RP2040 P4 -> GNSS RX
 * RP2040 Vin -> CRSF +
 * RP2040 GND -> CRSF -
 * RP2040 TX -> CRSF RX
