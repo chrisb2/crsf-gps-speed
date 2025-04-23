@@ -16,7 +16,7 @@ CRSFforArduino crsf = CRSFforArduino(&Serial1);
 TinyGPSPlus gps;
 SoftwareSerial gpsSerial = SoftwareSerial(GPS_RX, GPS_TX);
 ezLED crsfLed(BLUE_LED);
-ezLED gpsFixLed(GREEN_LED);
+ezLED telemetryLed(GREEN_LED);
 
 void setup() {
   Serial.begin(460800);
@@ -49,17 +49,17 @@ void sendDataToReceiver() {
   if (gps.location.isValid()) {
     if (gps.location.isUpdated()) {
       crsf.telemetryWriteGPS(gps.location.lat(), gps.location.lng(), gps.altitude.meters(), 
-        gps.speed.kmph(), gps.course.deg(), gps.satellites.value());
+        gps.speed.mps() * 100, gps.course.deg(), gps.satellites.value());
       crsf.update();
       displayInfo();
-      gpsFixLed.toggle();
+      telemetryLed.toggle();
     }
   }
 }
 
 void loop() {
   crsfLed.loop();
-  gpsFixLed.loop();
+  telemetryLed.loop();
 
   while (gpsSerial.available() > 0) {
     incomingByte = gpsSerial.read();

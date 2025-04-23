@@ -41,6 +41,14 @@ Configure the following in the *View->Configuration View* of the [u-blox u-cente
 * RP2040 TX -> CRSF RX
 * RP2040 RX -> CRSF TX
 
+## Telemetry Sensors
+
+* GPS
+* GSpd
+* Hdg
+* Alt
+* Sats
+
 ## ER6 Receiver CRSF Port
 
 I asked RadioMaster how much current can be drawn from the ER6 CRSF input port, this was their response:
