@@ -48,7 +48,7 @@ void displayInfo() {
 void sendDataToReceiver() {
   if (gps.location.isValid()) {
     if (gps.location.isUpdated()) {
-      crsf.telemetryWriteGPS(gps.location.lat(), gps.location.lng(), gps.altitude.meters(), 
+      crsf.telemetryWriteGPS(gps.location.lat(), gps.location.lng(), gps.altitude.value(), 
         gps.speed.mps() * 100, gps.course.deg(), gps.satellites.value());
       crsf.update();
       displayInfo();
