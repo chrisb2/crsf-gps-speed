@@ -2,7 +2,7 @@
 
 This sensor based on a [SeeedStudio XIAO RP2040](https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html) reads from a GPS module and sends GPS telemetry values using the CRSF protocol, which can be consumed by an appropriate [ELRS](https://www.expresslrs.org/) radio control receiver, for example a RadioMaster ER6 or ER8.
 
-The XIAO RP2040 was chosen as the 3.3V buck converter it has (part no. [RS3236](https://www.run-ic.com/upload/goods/20220914/202209140946476934.pdf)) accepts upto 8V on *Vin*, this is required as the ER6 and ER8 have 7V on the positive pin of the CRSF input port, allowing the RP2040 to be directly powered by the receiver.
+The XIAO RP2040 was chosen as the 3.3V buck converter it has (part no. [RS3236](https://www.run-ic.com/upload/goods/20220914/202209140946476934.pdf)) accepts upto 8V on *Vin*, this is required as the ER6 and ER8 have 7V on the positive pin of the CRSF input port, allowing the RP2040 and GPS module to be directly powered by the receiver.
 
 Current meassurements show this sensor takes 80-90mA with the *TOPGNSS GG-1802* GPS module used.
 
@@ -36,10 +36,10 @@ Configure the following in the *View->Configuration View* of the [u-blox u-cente
 * RP2040 3.3V -> GNSS VCC
 * RP2040 P3 -> GNSS TX
 * RP2040 P4 -> GNSS RX
-* RP2040 Vin -> CRSF +
-* RP2040 GND -> CRSF -
-* RP2040 TX -> CRSF RX
-* RP2040 RX -> CRSF TX
+* RP2040 Vin -> CRSF port +
+* RP2040 GND -> CRSF port -
+* RP2040 TX -> CRSF port RX
+* RP2040 RX -> CRSF port TX
 
 ## Telemetry Sensors
 
@@ -48,6 +48,8 @@ Configure the following in the *View->Configuration View* of the [u-blox u-cente
 * Hdg
 * Alt
 * Sats
+
+![telemtry](gps-telemetry-1.jpg)
 
 ## ER6 Receiver CRSF Port
 
