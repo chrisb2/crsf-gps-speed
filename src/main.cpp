@@ -7,6 +7,7 @@
 #define GPS_RX 3
 #define GPS_TX 4
 #define GREEN_LED 16
+#define RED_LED 17
 #define BLUE_LED 25
 #define GPS_DEBUG_ENABLED 1
 // #define SERIAL_DEBUG_ENABLED 1
@@ -17,14 +18,17 @@ TinyGPSPlus gps;
 SoftwareSerial gpsSerial = SoftwareSerial(GPS_RX, GPS_TX);
 ezLED crsfLed(BLUE_LED);
 ezLED telemetryLed(GREEN_LED);
+ezLED redLed(RED_LED);
 
 void setup() {
   Serial.begin(460800);
   gpsSerial.begin(GPS_BAUD_RATE);
 
   if (crsf.begin()) {
-    crsfLed.blink(250, 750);
+    crsfLed.blink(50, 950);
   }
+  redLed.turnOFF();
+  telemetryLed.turnOFF();
 }
 
 void displayInfo() {
@@ -42,6 +46,8 @@ void displayInfo() {
   Serial.print(gps.satellites.value());
   Serial.print(F(","));
   Serial.println(gps.hdop.value());
+
+  telemetryLed.toggle();
 #endif
 }
 
@@ -52,7 +58,6 @@ void sendDataToReceiver() {
         gps.speed.mps() * 100, gps.course.deg(), gps.satellites.value());
       crsf.update();
       displayInfo();
-      telemetryLed.toggle();
     }
   }
 }
