@@ -98,7 +98,7 @@ void enableGPS() {
 }
 
 void disableGPS() {
-  //gpsSerial.end(); TODO
+  gpsSerial.end();
   digitalWrite(GPS_ENABLE, LOW);
   gpsEnabled = false;
 #ifdef GPS_DEBUG_ENABLED
@@ -118,7 +118,6 @@ void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
 #ifdef GPS_DEBUG_ENABLED
     Serial.println(F("Failsafe!"));
 #endif
-    //disableGPS(); TODO
   }
 
   uint16_t gpsChanValue = crsf.rcToUs(rcData->value[GPS_ENABLE_CHAN]);
