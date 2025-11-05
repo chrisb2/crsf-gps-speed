@@ -47,7 +47,7 @@ void setup() {
   pinPeripheral(GPS_RX, PIO_SERCOM_ALT);
 
   if (crsf.begin()) {
-    redLed.blink(20, 1000);
+    redLed.blink(5, 2000);
   } else {
     redLed.turnON();
   }
@@ -81,11 +81,11 @@ void loop() {
 }
 
 void sendDataToReceiver() {
-  blueLed.blink(5, 100);
+  blueLed.blinkNumberOfTimes(2, 2, 1);
   if (gps.location.isUpdated()) {
     crsf.telemetryWriteGPS(gps.location.lat(), gps.location.lng(), gps.altitude.value(), 
         gps.speed.mps() * 100, gps.course.deg(), gps.satellites.value());
-    greenLed.blink(10, 100);
+    greenLed.blinkNumberOfTimes(5, 5, 1);
     displayInfo();
   } 
 }
