@@ -8,8 +8,10 @@
 #define GPS_TX D10
 #define GPS_RX D9
 #define GPS_ENABLE D8
-#define YELLOW_LED 17
 #define GPS_ENABLE_CHAN 4 // AUX1
+#define RED_LED D0
+#define BLUE_LED D1
+#define GREEN_LED D2
 #define GPS_DEBUG_ENABLED 1
 //#define SERIAL_DEBUG_ENABLED 1
 
@@ -19,6 +21,9 @@ CRSFforArduino crsf = CRSFforArduino(&Serial1);
 TinyGPSPlus gps;
 Uart gpsSerial(&sercom0, GPS_RX, GPS_TX, SERCOM_RX_PAD_1, UART_TX_PAD_2);
 ezLED userLed(LED_BUILTIN);
+ezLED redLed(RED_LED);
+ezLED blueLed(BLUE_LED);
+ezLED greenLed(GREEN_LED);
 
 int rcChannelCount = crsfProtocol::RC_CHANNEL_COUNT;
 const char *rcChannelNames[] = {
@@ -43,26 +48,28 @@ void setup() {
   pinPeripheral(GPS_RX, PIO_SERCOM_ALT);
 
   if (crsf.begin()) {
-    delay(2000);
-    userLed.blinkNumberOfTimes(200, 200, 5);
+    redLed.blink(20, 1000);
+  } else {
+    redLed.turnON();
   }
 
   rcChannelCount = rcChannelCount > crsfProtocol::RC_CHANNEL_COUNT ? crsfProtocol::RC_CHANNEL_COUNT : rcChannelCount;
   crsf.setRcChannelsCallback(onReceiveRcChannels);
 
   enableGPS();
-  //delay(2000);
-  //userLed.blinkNumberOfTimes(200, 200, 5);
 }
 
 void loop() {
   userLed.loop();
+  redLed.loop();
+  blueLed.loop();
+  greenLed.loop();
   crsf.update();
 
   while (gpsSerial.available() > 0) {
     incomingByte = gpsSerial.read();
     if (gps.encode(incomingByte)) {
-      // userLed.toggle();
+      blueLed.blink(10, 100);
       displayInfo();
       sendDataToReceiver();
     }
@@ -79,9 +86,8 @@ void loop() {
 
 void sendDataToReceiver() {
   if (gps.location.isValid()) {
-    // userLed.toggle();
-    //if (gps.location.isUpdated()) {
-      userLed.toggle();
+    //if (gps.speed.isUpdated()) {
+      greenLed.blink(10, 100);
       crsf.telemetryWriteGPS(gps.location.lat(), gps.location.lng(), gps.altitude.value(), 
         gps.speed.mps() * 100, gps.course.deg(), gps.satellites.value());
       // displayInfo();
