@@ -20,7 +20,6 @@ bool gpsEnabled = false;
 CRSFforArduino crsf = CRSFforArduino(&Serial1);
 TinyGPSPlus gps;
 Uart gpsSerial(&sercom0, GPS_RX, GPS_TX, SERCOM_RX_PAD_1, UART_TX_PAD_2);
-ezLED userLed(LED_BUILTIN);
 ezLED redLed(RED_LED);
 ezLED blueLed(BLUE_LED);
 ezLED greenLed(GREEN_LED);
@@ -56,11 +55,10 @@ void setup() {
   rcChannelCount = rcChannelCount > crsfProtocol::RC_CHANNEL_COUNT ? crsfProtocol::RC_CHANNEL_COUNT : rcChannelCount;
   crsf.setRcChannelsCallback(onReceiveRcChannels);
 
-  enableGPS();
+  enableGPS();  // TODO disable?
 }
 
 void loop() {
-  userLed.loop();
   redLed.loop();
   blueLed.loop();
   greenLed.loop();
@@ -69,8 +67,6 @@ void loop() {
   while (gpsSerial.available() > 0) {
     incomingByte = gpsSerial.read();
     if (gps.encode(incomingByte)) {
-      blueLed.blink(10, 100);
-      displayInfo();
       sendDataToReceiver();
     }
 
@@ -85,28 +81,31 @@ void loop() {
 }
 
 void sendDataToReceiver() {
-  if (gps.location.isValid()) {
-    //if (gps.speed.isUpdated()) {
-      greenLed.blink(10, 100);
-      crsf.telemetryWriteGPS(gps.location.lat(), gps.location.lng(), gps.altitude.value(), 
+  blueLed.blink(5, 100);
+  if (gps.location.isUpdated()) {
+    crsf.telemetryWriteGPS(gps.location.lat(), gps.location.lng(), gps.altitude.value(), 
         gps.speed.mps() * 100, gps.course.deg(), gps.satellites.value());
-      // displayInfo();
-    //}
-  }
+    greenLed.blink(10, 100);
+    displayInfo();
+  } 
 }
 
 void enableGPS() {
   digitalWrite(GPS_ENABLE, HIGH);
   gpsSerial.begin(GPS_BAUD_RATE);
   gpsEnabled = true;
-  Serial.println("GPS enabled");
+#ifdef GPS_DEBUG_ENABLED
+  Serial.println(F("GPS enabled"));
+#endif
 }
 
 void disableGPS() {
-  //gpsSerial.end();
+  //gpsSerial.end(); TODO
   digitalWrite(GPS_ENABLE, LOW);
   gpsEnabled = false;
-  Serial.println("GPS disabled");
+#ifdef GPS_DEBUG_ENABLED
+  Serial.println(F("GPS disabled"));
+#endif
 }
 
 void printChannelValue(uint16_t val) {
@@ -118,8 +117,10 @@ void printChannelValue(uint16_t val) {
 
 void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
   if (rcData->failsafe) {
-    Serial.println("Failsafe!");
-    //disableGPS();
+#ifdef GPS_DEBUG_ENABLED
+    Serial.println(F("Failsafe!"));
+#endif
+    //disableGPS(); TODO
   }
 
   uint16_t gpsChanValue = crsf.rcToUs(rcData->value[GPS_ENABLE_CHAN]);
