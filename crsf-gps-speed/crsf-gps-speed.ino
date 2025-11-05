@@ -54,8 +54,6 @@ void setup() {
 
   rcChannelCount = rcChannelCount > crsfProtocol::RC_CHANNEL_COUNT ? crsfProtocol::RC_CHANNEL_COUNT : rcChannelCount;
   crsf.setRcChannelsCallback(onReceiveRcChannels);
-
-  enableGPS();  // TODO disable?
 }
 
 void loop() {
