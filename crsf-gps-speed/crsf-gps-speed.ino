@@ -4,6 +4,7 @@
 #include "wiring_private.h"
 #include <ezLED.h>
 #include <ArduinoLowPower.h>
+#include <LibPrintf.h>
 
 #define GPS_BAUD_RATE 19200
 #define GPS_TX D10
@@ -14,7 +15,7 @@
 #define BLUE_LED D1
 #define GREEN_LED D2
 #define GPS_DEBUG_ENABLED 1
-//#define SERIAL_DEBUG_ENABLED 1
+// #define SERIAL_DEBUG_ENABLED 1
 
 int incomingByte = 0;
 bool gpsEnabled = false;
@@ -40,6 +41,7 @@ void sendDataToReceiver();
 
 void setup() {
   Serial.begin(460800);
+  while (!Serial && (millis() < 5000));
 
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(GPS_ENABLE, OUTPUT);
@@ -55,6 +57,7 @@ void setup() {
 
   rcChannelCount = rcChannelCount > crsfProtocol::RC_CHANNEL_COUNT ? crsfProtocol::RC_CHANNEL_COUNT : rcChannelCount;
   crsf.setRcChannelsCallback(onReceiveRcChannels);
+  printf("Ready!\n");
 }
 
 void loop() {
@@ -71,10 +74,9 @@ void loop() {
 
 #ifdef SERIAL_DEBUG_ENABLED
     if (incomingByte == '$') {
-      Serial.println();
+      printf("\n");
     }
-    Serial.print(incomingByte, HEX);
-    Serial.print(' ');
+    printf("%02x ", incomingByte);
 #endif
   }
 }
@@ -94,7 +96,7 @@ void enableGPS() {
   gpsSerial.begin(GPS_BAUD_RATE);
   gpsEnabled = true;
 #ifdef GPS_DEBUG_ENABLED
-  Serial.println(F("GPS enabled"));
+  printf("GPS enabled\n");
 #endif
 }
 
@@ -103,21 +105,21 @@ void disableGPS() {
   digitalWrite(GPS_ENABLE, LOW);
   gpsEnabled = false;
 #ifdef GPS_DEBUG_ENABLED
-  Serial.println(F("GPS disabled"));
+  printf("GPS disabled\n");
+  Serial.flush();
 #endif
 }
 
 void printChannelValue(uint16_t val) {
 #ifdef GPS_DEBUG_ENABLED
-  Serial.print(F("GPS enable channel value: "));
-  Serial.println(val);
+  printf("GPS enable channel value: %d\n", val);
 #endif
 }
 
 void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
   if (rcData->failsafe) {
 #ifdef GPS_DEBUG_ENABLED
-    Serial.println(F("Failsafe!"));
+    printf("Failsafe!\n");
 #endif
   }
 
@@ -138,19 +140,10 @@ void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
 
 void displayInfo() {
 #ifdef GPS_DEBUG_ENABLED
-  Serial.print(gps.location.lat(), 6);
-  Serial.print(F(","));
-  Serial.print(gps.location.lng(), 6);
-  Serial.print(F(","));
-  Serial.print(gps.speed.kmph(), 1);
-  Serial.print(F(","));
-  Serial.print(gps.altitude.meters(), 0);
-  Serial.print(F(","));
-  Serial.print(gps.course.deg(), 0);
-  Serial.print(F(","));
-  Serial.print(gps.satellites.value());
-  Serial.print(F(","));
-  Serial.println(gps.hdop.value());
+  printf("%.6f, %.6f, %.1f, %.0f, %.0f, %d, %d\n", 
+      gps.location.lat(), gps.location.lng(),
+      gps.speed.kmph(), gps.altitude.meters(), gps.course.deg(),
+      gps.satellites.value(), gps.hdop.value());
 #endif
 }
 
