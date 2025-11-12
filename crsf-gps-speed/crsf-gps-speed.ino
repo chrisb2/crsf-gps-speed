@@ -3,6 +3,7 @@
 #include <SoftwareSerial.h>
 #include "wiring_private.h"
 #include <ezLED.h>
+#include <ArduinoLowPower.h>
 
 #define GPS_BAUD_RATE 19200
 #define GPS_TX D10
@@ -128,6 +129,10 @@ void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
   } else if (gpsChanValue == 2000 && !gpsEnabled) {
     printChannelValue(gpsChanValue);
     enableGPS();
+  }
+
+  if (!gpsEnabled) {
+    LowPower.deepSleep(30000);
   }
 }
 
