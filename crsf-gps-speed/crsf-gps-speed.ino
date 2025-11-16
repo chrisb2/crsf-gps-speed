@@ -3,7 +3,6 @@
 #include <SoftwareSerial.h>
 #include "wiring_private.h"
 #include <ezLED.h>
-// #include <ArduinoLowPower.h>
 #include <LibPrintf.h>
 #include <SimpleKalmanFilter.h>
 
@@ -19,13 +18,14 @@
 // #define SERIAL_DEBUG_ENABLED 1
 
 const float TO_KPH = 0.036;
+const int MEASUREMENT_UNCERTAINTY = 1; // centimeters/second
+const float PROCESS_VARIANCE = 0.1;
 int incomingByte = 0;
 volatile bool gpsEnabled = false;
-volatile bool recvConnected = false;
 CRSFforArduino crsf = CRSFforArduino(&Serial1);
 TinyGPSPlus gps;
 Uart gpsSerial(&sercom0, GPS_RX, GPS_TX, SERCOM_RX_PAD_1, UART_TX_PAD_2);
-SimpleKalmanFilter speedKalmanFilter(1, 1, 0.01);
+SimpleKalmanFilter speedKalmanFilter(MEASUREMENT_UNCERTAINTY, MEASUREMENT_UNCERTAINTY, PROCESS_VARIANCE);
 ezLED redLed(RED_LED);
 ezLED blueLed(BLUE_LED);
 ezLED greenLed(GREEN_LED);
@@ -62,8 +62,6 @@ void setup() {
   rcChannelCount = rcChannelCount > crsfProtocol::RC_CHANNEL_COUNT ? crsfProtocol::RC_CHANNEL_COUNT : rcChannelCount;
   crsf.setRcChannelsCallback(onReceiveRcChannels);
 
-  // LowPower.attachInterruptWakeup(RTC_ALARM_WAKEUP, alarmEvent0, CHANGE);
-
   enableGPS();
   printf("Ready!\n");
 }
@@ -86,10 +84,6 @@ void loop() {
     }
     printf("%02x ", incomingByte);
 #endif
-  }
-
-  if (recvConnected && !gpsEnabled) {
-    // sleep();
   }
 }
 
@@ -131,12 +125,9 @@ void printChannelValue(uint16_t val) {
 
 void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
   if (rcData->failsafe) {
-    recvConnected = false;
 #ifdef GPS_DEBUG_ENABLED
     printf("Failsafe!\n");
 #endif
-  } else {
-    recvConnected = true;
   }
 
   uint16_t gpsChanValue = crsf.rcToUs(rcData->value[GPS_ENABLE_CHAN]);
@@ -147,23 +138,6 @@ void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
     printChannelValue(gpsChanValue);
     enableGPS();
   }
-}
-
-void sleep() {
-  printf("Sleeping...\n");
-  Serial.flush();  // Needed due to upcoming sleep
-  delay(1000);
-
-  // Make sure red led not left on
-  while(redLed.getState()) {
-    delay(6);
-  }
-
-  // LowPower.sleep(30000);
-  
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(500);
-  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void displayInfo(float actualSpeed, float estimatedSpeed) {
@@ -179,8 +153,4 @@ void displayInfo(float actualSpeed, float estimatedSpeed) {
 void SERCOM0_Handler()
 {
   gpsSerial.IrqHandler();
-}
-
-void alarmEvent0() {
-  // Do nothing
 }
