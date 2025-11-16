@@ -1,45 +1,44 @@
 # CRSF GPS Speed and Coordinates Sensor
 
-This sensor based on a [SeeedStudio XIAO RP2040](https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html) reads from a GPS module and sends GPS telemetry values using the CRSF protocol, which can be consumed by an appropriate [ELRS](https://www.expresslrs.org/) radio control receiver, for example a RadioMaster ER6 or ER8.
+This sensor based on a [SeeedStudio XIAO SAMD21](https://www.seeedstudio.com/Seeeduino-XIAO-Arduino-Microcontroller-SAMD21-Cortex-M0+-p-4426.html) reads from a GPS module and sends GPS telemetry values using the CRSF protocol, which can be consumed by an appropriate [ELRS](https://www.expresslrs.org/) radio control receiver, for example a RadioMaster ER4, ER6 or ER8.
 
-The XIAO RP2040 was chosen as the 3.3V buck converter it has (part no. [RS3236](https://www.run-ic.com/upload/goods/20220914/202209140946476934.pdf)) accepts upto 8V on *Vin*, this is required as the ER6 and ER8 have 7V on the positive pin of the CRSF input port, allowing the RP2040 and GPS module to be directly powered by the receiver.
+The GPS module can be disabled using a switch on the transmitter to save power when its not needed. The SAMD21 is enters deep sleep when the GPS module is disabled.
 
 Current meassurements show this sensor takes 80-90mA with the *TOPGNSS GG-1802* GPS module used.
-
-Note that this PlatformIO project uses the arduino-pico platform to enable the use of an additional Serial port on the RP2040 using PIO, see [“SoftwareSerial” PIO-based UART](https://arduino-pico.readthedocs.io/en/latest/piouart.html#).
 
 ## GPS Module Configuration
 
 The following configuration is optimised for a yacht, you may need to alter the  *Dynamic Model* for a plane. 
 
-The *TinyGPSPlus* library parses only the *$GPGGA* and *$GPRMC* NMEA sentences, so all others are turn off to reduce the serial load on the RP2040 at the 10Hz GPS update rate configured.
+The *TinyGPSPlus* library parses only the *$GPGGA* and *$GPRMC* NMEA sentences, so all others are turn off to reduce the serial load on the SAMD21 at the 3Hz GPS update rate configured.
 
 Configure the following in the *View->Configuration View* of the [u-blox u-center](https://www.u-blox.com/en/product/u-center) application:
-* PRT->Baudrate: 19200
-* RATE->Measurement Period: 100ms
+* PRT->Baudrate: 57600
+* RATE->Measurement Period: 333ms
 * PMS->Setup ID: 0 - Full Power
-* NAV5->Dynamic Model: 3 - Pedestrian
-* GNSS->BeiDou: checked (in addition to GPS)
+* NAV5->Dynamic Model: 3 - Portable
+* GNSS: GPS and SBAS only enabled
 * MSG->Message->F0-01 NMEA GxGLL: uncheck all
-* MSG->Message->F0-01 NMEA GxGSA: uncheck all
-* MSG->Message->F0-01 NMEA GxGSV: uncheck all
-* MSG->Message->F0-01 NMEA GxVTG: uncheck all
+* MSG->Message->F0-02 NMEA GxGSA: uncheck all
+* MSG->Message->F0-03 NMEA GxGSV: uncheck all
+* MSG->Message->F0-05 NMEA GxVTG: uncheck all
 
-## RP2040 LEDs
+## LEDs
 
-* Blue - flashes once per second if CRSF is initialized.
+* Red - flashes once every two seconds after CRSF protocol is started.
+* Blue - flashes once for every NMEA message received from the GPS.
 * Green - flashes once per telemetry message over CRSF, once a GPS fix is obtained.
 
 ## Connections
 
-* RP2040 GND -> GNSS GND
-* RP2040 3.3V -> GNSS VCC
-* RP2040 P3 -> GNSS TX
-* RP2040 P4 -> GNSS RX
-* RP2040 Vin -> CRSF port +
-* RP2040 GND -> CRSF port -
-* RP2040 TX -> CRSF port RX
-* RP2040 RX -> CRSF port TX
+* SAMD21 GND -> GNSS GND
+* SAMD21 5V -> GNSS VCC
+* SAMD21 D9 -> GNSS TX
+* SAMD21 D10 -> GNSS RX
+* SAMD21 5V -> Recv +
+* SAMD21 GND -> Recv -
+* SAMD21 TX -> Recv CRSF RX
+* SAMD21 RX -> Recv port TX
 
 ## Telemetry Sensors
 
@@ -51,23 +50,13 @@ Configure the following in the *View->Configuration View* of the [u-blox u-cente
 
 ![telemtry](gps-telemetry-1.jpg)
 
-## ER6 Receiver CRSF Port
-
-I asked RadioMaster how much current can be drawn from the ER6 CRSF input port, this was their response:
-
-The positive and negative (+/-) pins of the CRSF port of the ER6 receiver have limited power supply capacity and are designed for low-power sensors or communication devices.
-
-1. Power supply limitations and purpose: The CRSF port is mainly used to provide the necessary low-power power supply for sensors and is not used to drive high-current devices (such as servos). If external sensors are connected at the CRSF end, it is necessary to ensure that their power consumption is extremely low.
-
-2. Safety Advice: Based on other similar designs (such as the expansion function of the built-in sensor), it is recommended that the current drawn from the CRSF port does not exceed 250mA to prevent the receiver from overheating or getting damaged.
-
-3. Risk Warning: If the sensor requires a larger current, it should be independently powered by the main power supply (such as BEC or battery), rather than relying on the CRSF port.
-
 ## Libraries
 
 * [TinyGPSPlus](https://github.com/mikalhart/TinyGPSPlus)
 * [CRSF for Arduino](https://github.com/ZZ-Cat/CRSFforArduino)
 * [ezLED](https://github.com/zetavg/arduino-ezLED)
+* [Printf](https://github.com/embeddedartistry/arduino-printf/tree/master)
+* [Kalman Filter](https://github.com/denyssene/SimpleKalmanFilter)
 
 ## References
 
