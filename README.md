@@ -2,7 +2,7 @@
 
 This sensor based on a [SeeedStudio XIAO SAMD21](https://www.seeedstudio.com/Seeeduino-XIAO-Arduino-Microcontroller-SAMD21-Cortex-M0+-p-4426.html) reads from a GPS module and sends GPS telemetry values using the CRSF protocol, which can be consumed by an appropriate [ELRS](https://www.expresslrs.org/) radio control receiver, for example a RadioMaster ER4, ER6 or ER8.
 
-The GPS module can be disabled using a switch on the transmitter to save power when its not needed. The SAMD21 is enters deep sleep when the GPS module is disabled.
+The GPS module can be disabled using a switch on the transmitter to save power when its not needed.
 
 Current meassurements show this sensor takes 80-90mA with the *TOPGNSS GG-1802* GPS module used.
 
