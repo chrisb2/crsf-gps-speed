@@ -3,10 +3,11 @@
 #include <SoftwareSerial.h>
 #include "wiring_private.h"
 #include <ezLED.h>
-#include <ArduinoLowPower.h>
+// #include <ArduinoLowPower.h>
 #include <LibPrintf.h>
+#include <SimpleKalmanFilter.h>
 
-#define GPS_BAUD_RATE 19200
+#define GPS_BAUD_RATE 57600
 #define GPS_TX D10
 #define GPS_RX D9
 #define GPS_ENABLE D8
@@ -17,11 +18,14 @@
 #define GPS_DEBUG_ENABLED 1
 // #define SERIAL_DEBUG_ENABLED 1
 
+const float TO_KPH = 0.036;
 int incomingByte = 0;
-bool gpsEnabled = false;
+volatile bool gpsEnabled = false;
+volatile bool recvConnected = false;
 CRSFforArduino crsf = CRSFforArduino(&Serial1);
 TinyGPSPlus gps;
 Uart gpsSerial(&sercom0, GPS_RX, GPS_TX, SERCOM_RX_PAD_1, UART_TX_PAD_2);
+SimpleKalmanFilter speedKalmanFilter(1, 1, 0.01);
 ezLED redLed(RED_LED);
 ezLED blueLed(BLUE_LED);
 ezLED greenLed(GREEN_LED);
@@ -36,7 +40,7 @@ const char *rcChannelNames[] = {
 void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcChannels);
 void enableGPS();
 void disableGPS();
-void displayInfo();
+void displayInfo(float actualSpeed, float estimatedSpeed);
 void sendDataToReceiver();
 
 void setup() {
@@ -57,6 +61,10 @@ void setup() {
 
   rcChannelCount = rcChannelCount > crsfProtocol::RC_CHANNEL_COUNT ? crsfProtocol::RC_CHANNEL_COUNT : rcChannelCount;
   crsf.setRcChannelsCallback(onReceiveRcChannels);
+
+  // LowPower.attachInterruptWakeup(RTC_ALARM_WAKEUP, alarmEvent0, CHANGE);
+
+  enableGPS();
   printf("Ready!\n");
 }
 
@@ -79,15 +87,21 @@ void loop() {
     printf("%02x ", incomingByte);
 #endif
   }
+
+  if (recvConnected && !gpsEnabled) {
+    // sleep();
+  }
 }
 
 void sendDataToReceiver() {
   blueLed.blinkNumberOfTimes(2, 2, 1);
   if (gps.location.isUpdated()) {
+    float actualSpeed = gps.speed.mps() * 100; // centimeters/second
+    float estimatedSpeed = speedKalmanFilter.updateEstimate(actualSpeed);
     crsf.telemetryWriteGPS(gps.location.lat(), gps.location.lng(), gps.altitude.value(), 
-        gps.speed.mps() * 100, gps.course.deg(), gps.satellites.value());
+        estimatedSpeed, gps.course.deg(), gps.satellites.value());
     greenLed.blinkNumberOfTimes(5, 5, 1);
-    displayInfo();
+    displayInfo(actualSpeed, estimatedSpeed);
   } 
 }
 
@@ -106,7 +120,6 @@ void disableGPS() {
   gpsEnabled = false;
 #ifdef GPS_DEBUG_ENABLED
   printf("GPS disabled\n");
-  Serial.flush();
 #endif
 }
 
@@ -118,13 +131,15 @@ void printChannelValue(uint16_t val) {
 
 void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
   if (rcData->failsafe) {
+    recvConnected = false;
 #ifdef GPS_DEBUG_ENABLED
     printf("Failsafe!\n");
 #endif
+  } else {
+    recvConnected = true;
   }
 
   uint16_t gpsChanValue = crsf.rcToUs(rcData->value[GPS_ENABLE_CHAN]);
-
   if (gpsChanValue == 1000 && gpsEnabled) {
     printChannelValue(gpsChanValue);
     disableGPS();
@@ -132,17 +147,31 @@ void onReceiveRcChannels(serialReceiverLayer::rcChannels_t *rcData) {
     printChannelValue(gpsChanValue);
     enableGPS();
   }
-
-  if (!gpsEnabled) {
-    LowPower.deepSleep(30000);
-  }
 }
 
-void displayInfo() {
+void sleep() {
+  printf("Sleeping...\n");
+  Serial.flush();  // Needed due to upcoming sleep
+  delay(1000);
+
+  // Make sure red led not left on
+  while(redLed.getState()) {
+    delay(6);
+  }
+
+  // LowPower.sleep(30000);
+  
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(500);
+  digitalWrite(LED_BUILTIN, HIGH);
+}
+
+void displayInfo(float actualSpeed, float estimatedSpeed) {
 #ifdef GPS_DEBUG_ENABLED
-  printf("%.6f, %.6f, %.1f, %.0f, %.0f, %d, %d\n", 
+  printf("%.6f, %.6f, %.1f, %.1f, %.0f, %.0f, %d, %d\n", 
       gps.location.lat(), gps.location.lng(),
-      gps.speed.kmph(), gps.altitude.meters(), gps.course.deg(),
+      actualSpeed * TO_KPH, estimatedSpeed * TO_KPH,
+      gps.altitude.meters(), gps.course.deg(),
       gps.satellites.value(), gps.hdop.value());
 #endif
 }
@@ -150,4 +179,8 @@ void displayInfo() {
 void SERCOM0_Handler()
 {
   gpsSerial.IrqHandler();
+}
+
+void alarmEvent0() {
+  // Do nothing
 }
