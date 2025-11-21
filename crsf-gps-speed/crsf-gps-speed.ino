@@ -14,10 +14,10 @@
 #define RED_LED D0
 #define BLUE_LED D1
 #define GREEN_LED D2
-#define GPS_DEBUG_ENABLED 1
+// #define GPS_DEBUG_ENABLED 1
 // #define SERIAL_DEBUG_ENABLED 1
 
-const float TO_KPH = 0.036;
+const float TO_KPH = 0.036; // centimeters/sec to kph
 const int MEASUREMENT_UNCERTAINTY = 1; // centimeters/second
 const float PROCESS_VARIANCE = 0.1;
 int incomingByte = 0;
